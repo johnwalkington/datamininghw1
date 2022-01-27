@@ -1,0 +1,15 @@
+---
+title: "hw1 markdown"
+output: pdf_document
+---
+
+setwd("~/Desktop/dataminingsp22/datamininghw1/data")
+
+library(tidyverse)
+library(ggplot2)
+
+abia = read.csv('ABIA.csv', header = TRUE)
+
+head(abia)
+
+summary
