@@ -1,15 +1,129 @@
 ---
-title: "hw1 markdown"
-output: pdf_document
+title: 'Data Mining HW1: John Walkington, Karlo Vlahek, Parker Gauthier'
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
 ---
 
+```{r include=FALSE}
 setwd("~/Desktop/dataminingsp22/datamininghw1/data")
 
 library(tidyverse)
 library(ggplot2)
+library(mosaic)
+library(rsample)
+library(caret)
+library(modelr)
+library(parallel)
+library(foreach)
 
-abia = read.csv('ABIA.csv', header = TRUE)
+olympics = read.csv("olympics_top20.csv", header = TRUE)
+ABIA = read.csv('ABIA.csv', header = TRUE)
+billboard = read.csv("billboard.csv", header = TRUE)
+```
 
-head(abia)
+1) Data visualization: flights at ABIA
 
-summary
+```{r}
+airlines = c('AA',"UA","DL","WN","B6")
+
+avg_hourly_delay = ABIA %>%
+  filter(UniqueCarrier==airlines) %>% 
+  mutate(DepHour = floor(DepTime/100)) %>% 
+  group_by(DepHour, UniqueCarrier) %>% 
+  summarise(avgdelay=mean(DepDelay))
+
+ggplot(avg_hourly_delay) +
+  geom_line(aes(y=avgdelay, x = DepHour, color=UniqueCarrier)) +
+  labs(title ="Austin-Bergstrom Daily Average Departure Delays in 2008",
+       y= "Average Delay (in Minutes)",
+       x= "Hour of Day",
+       color="Carriers") +
+  scale_color_hue(labels= c("American Airlines", "JetBlue", 
+  "Delta Airlines","United Airlines","Southwest Airlines"))
+```
+According to this chart, across all airlines, the greatest average departure delays occur in the morning, with Southwest delays being the most severe.  If you're flying United, you want to avoid early afternoon departures, as there is a huge spike in average delays in the hours between 11:00 am and 4:00 pm. 
+
+2) Wrangling the Billboard Top 100
+
+Part A:
+
+```{r}
+billboard1 = billboard %>% 
+  filter(year>1958) %>% 
+  select(performer, song, year,week, week_position)
+
+top10 = billboard1 %>% 
+  group_by(performer,song) %>% 
+  summarize(count=n()) %>% 
+  arrange(desc(count)) %>% 
+  head(10)
+top10
+```
+
+Part B:
+
+```{r}
+billboardfilter = billboard %>%
+  filter(between(year,1959,2020)) %>%
+  group_by(year) %>%
+  count(song) %>%
+  count(year)
+
+ggplot(data = billboardfilter, aes(x = year, y = n)) +
+  geom_line() +
+  labs(title = "Song diversity by year", x = "Year", y = "# of unique songs")
+```
+Song diversity on the Billboard Top 100 peaked in the mid-1960's, then steadily dropped until it hit a low in the early 2000's.  Since the early 2000's, however, song diversity has increased sharply, with almost-record high numbers for 2020.
+
+Part C:
+
+```{r}
+ten_week_hit = billboard %>% 
+  filter(weeks_on_chart==10) %>% 
+  group_by(performer) %>% 
+  summarize(count=n()) %>% 
+  filter(count>=30) %>% 
+  arrange(desc(count))
+ten_week_hit
+```
+3) Wrangling the Olympics
+
+Part A:
+
+```{r}
+height = olympics %>%
+  filter(sex == "F") %>%
+  group_by(event) %>%
+  summarize(topheight = quantile(height, .95)) %>%
+  arrange(desc(topheight))
+height
+```
+
+Part B:
+
+```{r}
+variation = olympics %>%
+  filter(sex == "F") %>%
+  group_by(event) %>%
+  summarize(height_variation = sd(height)) %>%
+  arrange(desc(height_variation)) %>%
+  head(1)
+variation
+```
+Rowing Women's Coxed Fours has the most variation in height among competitors, with a standard deviation of 10.9 cm.
+
+Part C:
+
+```{r}
+average_age = olympics %>%
+  filter(sport == "Swimming") %>%
+  group_by(year, sex) %>%
+  summarise(average_age = mean(age))
+
+ggplot(data = average_age) +
+  geom_line(aes(x=year, y=average_age, color=sex)) +
+  labs(title = "Average age of Olympic swimming medalists by year", x = "Year", y = "Average age (years)")
+```
+The average age of Olympic swimming medalists spiked in 1924, but dropped to an average age of about 20 for men and 17 for women until the 1980s, when there began a gradual increase in age for both sexes.
