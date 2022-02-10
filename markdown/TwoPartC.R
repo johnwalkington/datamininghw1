@@ -1,6 +1,8 @@
 library(tidyverse)
 library(mosaic)
 
+setwd("~/School/UT/StatLearning/csvfiles")
+
 billboard = read.csv("billboard.csv")
 
 billboard_simp = billboard %>%
