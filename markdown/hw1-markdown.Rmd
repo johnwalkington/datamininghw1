@@ -365,6 +365,6 @@ p_test2 + geom_line(aes(x = mileage, y = koptimal_price_pred), color = "red") +
   labs(title = "How Trim 63 AMG's price depends on mileage", x = "Mileage", y = "Price")
 ```
 
-Discussion
+##Discussion
 
 It would appear that, with repeated trials, Trim 63 AMG's optimal value of k is generally higher.  This is due to Trim 63's larger sample size. Generally, higher values of k will reduce the variation of our model but at the cost of greater bias.  With larger sample sizes, we can afford to use larger values of k as these values will have a lesser effect on the model's bias.
