@@ -1,13 +1,10 @@
 ---
 title: 'Data Mining HW1: John Walkington, Karlo Vlahek, Parker Gauthier'
-output:
-  pdf_document: default
-  html_document:
-    df_print: paged
+output: md_document
 ---
 
 ```{r include=FALSE}
-setwd("~/School/UT/StatLearning/csvfiles")
+setwd("/Users/karlo/Desktop/ECO395M/data")
 
 library(tidyverse)
 library(ggplot2)
@@ -26,7 +23,7 @@ sclass = read.csv("sclass.csv", header = TRUE)
 
 # 1) Data visualization: flights at ABIA
 
-```{r}
+```{r include=FALSE}
 airlines = c('AA',"UA","DL","WN","B6")
 
 avg_hourly_delay = ABIA %>%
@@ -35,7 +32,7 @@ avg_hourly_delay = ABIA %>%
   group_by(DepHour, UniqueCarrier) %>% 
   summarise(avgdelay=mean(DepDelay))
 
-ggplot(avg_hourly_delay) +
+airline_delays = ggplot(avg_hourly_delay) +
   geom_line(aes(y=avgdelay, x = DepHour, color=UniqueCarrier)) +
   labs(title ="Austin-Bergstrom Daily Average Departure Delays in 2008",
        y= "Average Delay (in Minutes)",
@@ -44,13 +41,18 @@ ggplot(avg_hourly_delay) +
   scale_color_hue(labels= c("American Airlines", "JetBlue", 
   "Delta Airlines","United Airlines","Southwest Airlines"))
 ```
-According to this chart, across all airlines, the greatest average departure delays occur in the morning, with Southwest delays being the most severe.  If you're flying United, you want to avoid early afternoon departures, as there is a huge spike in average delays in the hours between 11:00 am and 4:00 pm. 
+
+```{r Airline Delays (1), echo=FALSE, error=FALSE, message=FALSE, warning =FALSE}
+airline_delays
+```
+
+How did departures for Austin-Bergstrom International Airport vary in 2008? According to this chart, across all airlines, the greatest average departure delays occur in the morning, with Southwest delays being the most severe.  If you're flying United, you want to avoid early afternoon departures, as there is a huge spike in average delays in the hours between 11:00 am and 4:00 pm. 
 
 #2) Wrangling the Billboard Top 100
 
 ##Part A:
 
-```{r}
+```{r Top 10 Songs Since 1958 (2A), echo=FALSE, error=FALSE, message=FALSE, warning =FALSE}
 billboard1 = billboard %>% 
   filter(year>1958) %>% 
   select(performer, song, year,week, week_position)
@@ -60,12 +62,13 @@ top10 = billboard1 %>%
   summarize(count=n()) %>% 
   arrange(desc(count)) %>% 
   head(10)
+
 top10
 ```
 
 ##Part B:
 
-```{r}
+```{r Musical Diversity (2B), echo=FALSE, error=FALSE, message=FALSE, warning =FALSE}
 billboardfilter = billboard %>%
   filter(between(year,1959,2020)) %>%
   group_by(year) %>%
@@ -74,13 +77,14 @@ billboardfilter = billboard %>%
 
 ggplot(data = billboardfilter, aes(x = year, y = n)) +
   geom_line() +
-  labs(title = "Song diversity by year", x = "Year", y = "# of unique songs")
+  labs(title = "Song Diversity by Year", x = "Year", y = "Number of Unique Songs")
 ```
+
 Song diversity on the Billboard Top 100 peaked in the mid-1960's, then steadily dropped until it hit a low in the early 2000's.  Since the early 2000's, however, song diversity has increased sharply, with almost-record high numbers for 2020.
 
 ##Part C:
 
-```{r}
+```{r 19 Artists that are Built Different (2C), echo=FALSE, error=FALSE, message=FALSE, warning =FALSE}
 ten_week_hit = billboard %>% 
   filter(weeks_on_chart==10) %>% 
   group_by(performer) %>% 
@@ -99,7 +103,7 @@ ggplot(ten_week_hit) +
 
 ##Part A:
 
-```{r}
+```{r 95th Percentile for Female Competitors (3A), echo=FALSE, error=FALSE, message=FALSE, warning =FALSE}
 height = olympics %>%
   filter(sex == "F") %>%
   group_by(event) %>%
@@ -108,9 +112,11 @@ height = olympics %>%
 height
 ```
 
+Female competitors across all athletic events in the top 20 Olympic sports. The Women's Basketball team has the highest (and therefore tallest) percentiles among all female sports. The Women's Triple Jump has the lowest.
+
 ##Part B:
 
-```{r}
+```{r Greatest variabilty in competitor heights among Womens events (3B), echo=FALSE, error=FALSE, message=FALSE, warning=FALSE}
 variation = olympics %>%
   filter(sex == "F") %>%
   group_by(event) %>%
@@ -119,11 +125,12 @@ variation = olympics %>%
   head(1)
 variation
 ```
+
 Rowing Women's Coxed Fours has the most variation in height among competitors, with a standard deviation of 10.9 cm.
 
 ##Part C:
 
-```{r}
+```{r Average Age of Olympic Swimmers (3C), echo=FALSE, error=FALSE, message=FALSE, warning =FALSE}
 average_age = olympics %>%
   filter(sport == "Swimming") %>%
   group_by(year, sex) %>%
@@ -131,13 +138,14 @@ average_age = olympics %>%
 
 ggplot(data = average_age) +
   geom_line(aes(x=year, y=average_age, color=sex)) +
-  labs(title = "Average age of Olympic swimming medalists by year", x = "Year", y = "Average age (years)")
+  labs(title = "Average Age of Olympic Swimming Medalists by Year", x = "Year", y = "Average age (years)")
 ```
+
 The average age of Olympic swimming medalists spiked in 1924, but dropped to an average age of about 20 for men and 17 for women until the 1980s, when there began a gradual increase in age for both sexes.
 
 #4.) K-nearest Neighbors
 
-```{r}
+```{r Preparation, echo=FALSE, error=FALSE, message=FALSE, warning =FALSE}
 ###
 #Question 4
 ###
@@ -152,7 +160,7 @@ library(parallel)
 library(foreach)
 
 
-setwd("~/School/UT/StatLearning/csvfiles")
+setwd("/Users/karlo/Desktop/ECO395M/data")
 
 sclass = read.csv("sclass.csv")
 
@@ -169,7 +177,7 @@ sclass65 = sclass %>%
 ##Trim 350 analysis
 ### Splitting the dataset and making predictions
 
-```{r}
+```{r Splitting Trim 350s for KNN, echo=FALSE, error=FALSE, message=FALSE, warning =FALSE}
 # SPLITTING TRIM 350'S DATASET FOR KNN
 sclass350_split = initial_split(sclass350, prop = 0.80)
 sclass350_train = training(sclass350_split)
@@ -220,9 +228,16 @@ sclass350_test = sclass350_test %>%
 rmse(knn350_300, sclass350_test)
 
 ```
+Above are the RMSE outputs, in order, of arbitrarily selected values of K (2, 10, 25, 100, and 300 respectively).
+
+```{r sClass350 Testing Data, echo=FALSE, error=FALSE, message=FALSE, warning =FALSE}
+sclass350_test %>% 
+  head(10)
+```
+This table shows our testing set with the predictions of each model associated with a  value of k.  For brevity we added only the first 10 observations. 
 
 ### Plotting RMSE vs K
-```{r}
+```{r Trim 350s RMSE Based on the Value of K, echo=FALSE, error=FALSE, message=FALSE, warning =FALSE}
 # PLOTTING RMSE VS K FOR TRIM 350
 
 rmse_350 = foreach(i = 1:150, .combine='c') %do%{
@@ -236,11 +251,11 @@ rmse_k1 = data.frame(rmse_350, xval)
 
 ggplot(rmse_k1) +
   geom_line(aes(x=xval, y=rmse_350)) +
-  labs(title = "Trim 350's RMSE Based on the Value of k", y = "RMSE", x = "Number of k-nearest Neighbors")
+  labs(title = "Trim 350's RMSE Based on the Value of K", y = "RMSE", x = "Number of k-nearest Neighbors")
 ```
 
 ### Finding Optimal K and Plotting the Model
-```{r}
+```{r Finding Optimal K and Plotting the Model ,echo=FALSE, error=FALSE, message=FALSE, warning =FALSE}
 
 # FINDING THE OPTIMAL VALUE OF k AND STORING IT
 
@@ -268,9 +283,10 @@ p_test1 + geom_line(aes(x = mileage, y = koptimal_price_pred), color = "red") +
 ```
 
 ## Trim 65 AMG analysis
+
 ### Splitting the data and making predictions
 
-```{r}
+```{r Splitting the data and making predictions, echo=FALSE, error=FALSE, message=FALSE, warning =FALSE}
 # SPLITTING TRIM 65 AMG'S DATASET FOR KNN
 sclass65_split = initial_split(sclass65, prop = 0.80)
 sclass65_train = training(sclass65_split)
@@ -318,9 +334,15 @@ sclass65_test = sclass65_test %>%
 
 rmse(knn65_200, sclass65_test)
 ```
+Above are the predicted RMSE values for different values of K (2, 10, 25, 100, and 200 respectively).
+```{r Class65 Testing Data, echo=FALSE, error=FALSE, message=FALSE, warning =FALSE}
+sclass65_test %>%
+  head(10)
+```
+This table shows our testing set with the predictions of each model associated with a value of k.  For brevity we added only the first 10 observations.
 
-###Plotting RMSE vs K
-```{r}
+### Plotting RMSE vs K
+```{r Plotting RMSE vs K, echo=FALSE, error=FALSE, message=FALSE, warning=FALSE}
 
 # PLOTTING RMSE VS K FOR TRIM 65 AMG
 
@@ -335,11 +357,11 @@ rmse_k2 = data.frame(rmse_65, xval2)
 
 ggplot(rmse_k2) +
   geom_line(aes(x=xval2, y=rmse_65)) +
-  labs(title = "Trim 65 AMG's RMSE Based on the Value of k", y = "RMSE", x = "Number of k-nearest Neighbors")
+  labs(title = "Trim 65 AMG's RMSE Based on the Value of K", y = "RMSE", x = "Number of K-Nearest Neighbors")
 ```
 
-###Finding Optimal k and Plotting the Model
-```{r}
+### Finding Optimal K and Plotting the Model
+```{r Finding Optimal K and Plotting the Model, echo=FALSE, error=FALSE, message=FALSE, warning=FALSE}
 # FINDING THE OPTIMAL VALUE OF k AND STORING IT
 
 kx65 = rmse_k2 %>%
@@ -362,9 +384,8 @@ p_test2 = ggplot(sclass65_test) +
   geom_point(aes(x = mileage, y = price))
 
 p_test2 + geom_line(aes(x = mileage, y = koptimal_price_pred), color = "red") +
-  labs(title = "How Trim 65 AMG's price depends on mileage", x = "Mileage", y = "Price")
+  labs(title = "How Trim 65 AMG's price depends on Mileage", x = "Mileage", y = "Price")
 ```
-
-##Discussion
+## Discussion
 
 It would appear that, with repeated trials, Trim 350's optimal value of k is generally higher.  This is due to Trim 350's larger sample size. Generally, higher values of k will reduce the variation of our model but at the cost of greater bias.  With larger sample sizes, we can afford to use larger values of k as these values will have a lesser effect on the model's bias.
